@@ -1,0 +1,11 @@
+-------------------------------------------------------------------
+Thu Mar 22 18:16:23 UTC 2012 - jw@suse.com
+
+- v0.3 survive corrupt boot sector through env vars.
+
+-------------------------------------------------------------------
+Sun Oct 10 17:53:28 UTC 2010 - jw@novell.com
+
+- v0.2 progress indicator was very messy. Slightly improved.
+
+

@@ -8,6 +8,7 @@
  *                          searches jpeg headers.
  * 2012-03-21, jw, V0.3  -- survive bad superblocks. 
  *                          Using ENV variables to configure.
+ * 2018-12-18, jw, V0.4  -- Made fit for 8GB drives and long path names.
  *
  * Wow. A medium that was emtpy before written has all the blocks in sequence 
  * So we just jump from jpeg magic to jpeg magic, and dump what is in between
@@ -36,7 +37,7 @@
  *
  */
 
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ static struct bootsector
 
 static int read_sector(int fd, unsigned char *buf, int sector_nr)
 {
-  if (lseek(fd, bs.sector_size * sector_nr, SEEK_SET) < 0)
+  if (lseek(fd, (off_t)(bs.sector_size) * sector_nr, SEEK_SET) < 0)
     {
        fprintf(stderr, "seek(%d) ", bs.sector_size * sector_nr);
        perror("failed"); exit(0);
@@ -310,12 +311,18 @@ outputdir and prefix defaults to '%s'.\n", VERSION, av[0], prefix);
   struct image_list *il = find_images(ifd, buf);
   struct sector *sl = sect_list(il);
 
+  if (strlen(prefix) > 900)
+    {
+      fprintf(stderr, "prefix does not fit: %ld (max=900)", strlen(prefix));
+      perror(" EEEhhh too long."); exit(1);
+    }
+
   fprintf(stderr, "writing to %s ...\n", av[2]);
   for (i = 0; i < il->cnt; i++)
     {
       int n = 0;
       int sect = il->img[i].start;
-      char oname[20];
+      char oname[1000];
 
       sprintf(oname, "%s%04d.jpg", prefix, i);
       int ofd = open(oname, O_WRONLY|O_CREAT, 0644);
